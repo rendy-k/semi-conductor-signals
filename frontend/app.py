@@ -1,13 +1,22 @@
 import numpy as np
 import streamlit as st
-from model.invoke_prediction import invoke_prediction
-
+import requests
+from model.invoke_prediction import invoke_signal_prediction
+try:
+    from config import SIGNAL_BACKEND
+except:
+    SIGNAL_BACKEND = None
+    print("Backend server not found")
 
 def main():
     st.set_page_config(
         page_title="Semi-conductor Signals", page_icon=":laptop:"
     )
     st.title("💻 Semi-conductor Signals: Pass/Fail Prediction")
+    st.markdown(
+        """This tool accepts 10 numerical semi-conductor signals and predicts whether it is a PASS or FAIL.
+        Originally, there are 5890 signals, but 10 of them are the strongest features."""
+    )
 
     with st.form("form"):
         # Input form
@@ -43,9 +52,9 @@ def main():
 
 
     if button:
-        with st.spinner("Computing image segmentation"):
+        with st.spinner("Predicting . . ."):
             try:
-                inputs = {
+                params = {
                     "signal_1": signal_1,
                     "signal_2": signal_2,
                     "signal_3": signal_3,
@@ -58,22 +67,33 @@ def main():
                     "signal_10": signal_10,
                 }
 
-                for k, v in inputs.items():
-                    if v == 0:
-                        inputs[k] = np.nan
-
                 # Request API
+                use_api = False
+                if SIGNAL_BACKEND is not None:
+                    try:
+                        response = requests.post(f"{SIGNAL_BACKEND}/predict_signals", json=params)
+                        response = response.json()
+                        use_api = True
+                    except:
+                        pass
 
                 # If backend is not deployed, use local model
-                response = invoke_prediction(
-                    signal_1, signal_2, signal_3, signal_4, signal_5,
-                    signal_6, signal_7, signal_8, signal_9, signal_10
-                )
+                if use_api == False:
+                    for k, v in params.items():
+                        if v == 0:
+                            params[k] = np.nan
+
+                    response = invoke_signal_prediction(
+                        signal_1, signal_2, signal_3, signal_4, signal_5,
+                        signal_6, signal_7, signal_8, signal_9, signal_10
+                    )
+
                 response = round(response, 2)
+                print(use_api)
 
                 # Display result
                 st.markdown("# Prediction result")
-                pass_fail = "FAIL" if response > 0.5 else "PASS"
+                pass_fail = "FAIL" if response > 0.33 else "PASS"
                 st.markdown(f"Prediction score: {str(response)} ({pass_fail})")
 
             except Exception as e:
