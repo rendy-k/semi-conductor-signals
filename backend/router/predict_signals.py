@@ -6,6 +6,6 @@ router = APIRouter()
 
 
 @router.post("/predict_signals/")
-def predict_signals(signal_body: SignalsBody):
+def predict_signals(signal_body: SignalsBody) -> float:
     response = request_signal_prediction(signal_body)
     return response
