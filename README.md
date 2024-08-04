@@ -1,9 +1,7 @@
 # Semi-conductor-Signals
+The objective of this repository is to demonstrate (1) the process of developing a Machine Learning model and (2) deploying the model with docker containers. The model prediction can be requested with APIs.
+
 This tool accepts 10 numerical semi-conductor signals and predicts whether it is a PASS or FAIL.
-
-The model was developed using a Machine Learning algorithm.
-
-Originally, there are 5890 signals, but 10 of them are the strongest features.
 
 # Folders
 - 01_data: the dataset used
