@@ -2,11 +2,8 @@ import numpy as np
 import streamlit as st
 import requests
 from model.invoke_prediction import invoke_signal_prediction
-try:
-    from config import SIGNAL_BACKEND
-except:
-    SIGNAL_BACKEND = None
-    print("Backend server not found")
+from config import SIGNAL_BACKEND
+
 
 def main():
     st.set_page_config(
@@ -67,18 +64,14 @@ def main():
                     "signal_10": signal_10,
                 }
 
-                # Request API
                 use_api = False
-                if SIGNAL_BACKEND is not None:
-                    try:
-                        response = requests.post(f"{SIGNAL_BACKEND}/predict_signals", json=params)
-                        response = response.json()
-                        use_api = True
-                    except:
-                        pass
-
-                # If backend is not deployed, use local model
-                if use_api == False:
+                try:
+                    # Request API
+                    response = requests.post(f"{SIGNAL_BACKEND}/predict_signals", json=params)
+                    response = response.json()
+                    use_api = True
+                except:
+                    # If backend is not deployed, use local model
                     for k, v in params.items():
                         if v == 0:
                             params[k] = np.nan
